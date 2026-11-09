@@ -1,10 +1,11 @@
 version: 2
 updates:
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "monthly"
+  # GitHub Actions: keep the versions used in the workflows current.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
+
+  # Python packages are deliberately NOT listed. requirements.txt uses minimum versions (">=") on purpose, so that
+  # the project installs on older Raspberry Pi OS / Python versions; Dependabot would only keep raising those minimums.
+  # Security alerts for dependencies still work: they are a separate setting (Settings -> Advanced Security).
