@@ -41,6 +41,7 @@ Each tool explains itself in the comment at the top of its file (usage, what it 
 | `meter_probe.py` | Streams a range of meters and prints the non-zero ones; first tool used to find the input meters. |
 | `meter_scan.py` | Scans many meter address blocks (including whole address groups) for ones that answer. |
 | `meter_blocks.py` | Live view of several meter blocks with a "baseline" key, to see which meter reacts to one change. |
+| `make_screenshots.py` | Starts the server in demo mode and takes the README screenshots with your installed Edge or Chrome (`pip install playwright`). Not a console tool. |
 | `sends_scan.sh` | Guided session that finds the AUX send addresses for CH1, AUX1 and AUX2. |
 | `masters_scan.sh` | Guided session that scans fader/ON elements for the AUX, BUS and stereo masters. |
 

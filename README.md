@@ -10,7 +10,15 @@ on the same network.
 > project does, so much of it was found by experiment (see [docs/PROTOCOL.md](docs/PROTOCOL.md)).
 > Use it at your own risk, and not for the first time in front of an audience.
 
-<!-- TODO: add a screenshot here, e.g. docs/screenshot.png -->
+![The mixer page: channel faders with level meters, names and the stereo master](docs/images/mix.png)
+
+| EQ | Compressor |
+|---|---|
+| ![EQ page with four bands, HPF and a response graph](docs/images/eq.png) | ![Compressor page with transfer curve and gain-reduction meter](docs/images/compressor.png) |
+| **AUX sends** (the faders become one aux's sends) | **BUS masters** |
+| ![AUX 1 send levels with PRE/POST buttons](docs/images/aux-sends.png) | ![BUS 1-8 master faders](docs/images/bus-masters.png) |
+
+*The screenshots show the built-in demo mix (see below), not a real show.*
 
 ## What it does
 
@@ -53,17 +61,19 @@ for owners, and [CONTRIBUTING.md](CONTRIBUTING.md) explains the rest.
 
 ## Quick start without a console (mock mode)
 
-This lets you try the page and develop without any hardware. Meters move with fake data.
+This lets you try the page and develop without any hardware. Meters move with fake data. Add `DEMO=1` for a
+made-up mix with names, EQ, compressors and sends already filled in (what the screenshots show); without it,
+values stay empty until you touch them.
 
 ```bash
 pip install -r requirements.txt
-MIDI_PORT=mock uvicorn server.app:app --host 0.0.0.0 --port 8000
+MIDI_PORT=mock DEMO=1 uvicorn server.app:app --host 0.0.0.0 --port 8000
 ```
 
 On Windows PowerShell:
 
 ```powershell
-$env:MIDI_PORT="mock"; uvicorn server.app:app --port 8000
+$env:MIDI_PORT="mock"; $env:DEMO="1"; uvicorn server.app:app --port 8000
 ```
 
 Open <http://localhost:8000>.
@@ -103,8 +113,16 @@ Details and the reasoning are in [docs/PROTOCOL.md](docs/PROTOCOL.md).
 | `MIDI_PORT` | `01V96` | Part of the MIDI port name to look for, or `mock` for no hardware |
 | `CHANNELS` | `24` | Number of input channels shown |
 | `NAMES_FILE` | `names.json` next to `server/` | Where names typed in the page are saved |
+| `DEMO` | off | `1` with `MIDI_PORT=mock`: start with a made-up, fully populated mix (never saved) |
 | `METER_FLOOR_DB` | `-60` | Bottom of the level-meter scale |
 | `GR_STEPS_PER_DB` | `41` | Scale of the gain-reduction bars (assumed; see the protocol notes) |
+
+## Roadmap
+
+What is planned, and what is waiting for someone with a console to check it, is tracked in the
+[issues](https://github.com/JanneSaare/01v96-web-remote/issues) and
+[milestones](https://github.com/JanneSaare/01v96-web-remote/milestones). Issues labelled
+`good first issue` and `help wanted` are good places to start.
 
 ## Tools for exploring the console
 

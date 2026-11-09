@@ -94,7 +94,7 @@ Requests answered about 6 ms apart worked reliably; the page paces them like tha
 | 31 | 9 | Threshold, −540 to 0 = −54.0 to 0 dB (0.1 dB) | ✔ |
 | 35 | 3n−2 | **AUX *n* send**: PRE/POST (0 = post, 1 = pre) | ✔ AUX1-3, ◐ rest |
 | 35 | 3n−1 | **AUX *n* send**: level (0-255, same scale as the fader) | ✔ AUX1-3, ◐ rest |
-| 1 | 0-15 | Scene title, one ASCII character per parameter | ✔ (read only) |
+| 1 | 0-15 | A 16-character text, one ASCII character per parameter. It read "BLASMASTERS 2026" on the author's console, probably the current scene's title (not confirmed) | ✔ read, ? meaning |
 | 88 | 0-15 | Effect name, channel `cc` = effect number | ✔ (read only) |
 | 79 | 0 | **Lead:** announced with `cc` = 1 while the stereo master fader moves; the value looks like the 0-255 fader scale. Might be a way to read the stereo master fader. | ? |
 
@@ -126,8 +126,8 @@ live without polling.
 
 ### Things that did **not** work
 
-- **Channel names:** not found over MIDI. They are not in elements 1-127 of the edit buffer (those hold scene
-  and effect names), changing one on the console sends nothing, and elements above 127 gave no replies (only one byte order for the two-byte element number was tried).
+- **Channel names:** not found over MIDI. They are not in elements 1-127 of the edit buffer (element 1 holds
+  a text that looks like a scene title, and 88 the effect names), changing a name on the console sends nothing, and elements above 127 gave no replies (only one byte order for the two-byte element number was tried).
   The setup memory (model `0D`, address `03`) holds patch and port names but no channel names.
 - Master fader and master ON have no SysEx address that we know of; their startup state is only learned from
   CC when you touch them.

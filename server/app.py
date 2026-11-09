@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from . import protocol, meters as meters_mod
+from . import demo, protocol, meters as meters_mod
 from .midi_out import MidiOut
 
 NUM_CHANNELS = int(os.environ.get("CHANNELS", 24))
@@ -48,6 +48,8 @@ def _load_names() -> dict[int, str]:
 
 
 def _save_names() -> None:
+    if DEMO:                                  # demo names are made up: never write them to the user's file
+        return
     tmp = NAMES_FILE + ".tmp"
     try:
         with open(tmp, "w", encoding="utf-8") as f:
@@ -57,7 +59,11 @@ def _save_names() -> None:
         print("could not save names:", e)
 
 
+# DEMO=1 (with MIDI_PORT=mock only): start with a fully populated made-up mix, see server/demo.py
+DEMO = midi.mock and os.environ.get("DEMO", "").lower() not in ("", "0", "false", "no")
 names = _load_names()
+if DEMO:
+    demo.fill(state, eq_state, dyn_state, send_state, names)
 clients: set[WebSocket] = set()
 
 

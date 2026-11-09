@@ -4,6 +4,13 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Added
+- Demo mode (`MIDI_PORT=mock DEMO=1`): a made-up, fully populated mix to try the page without a console.
+- `tools/make_screenshots.py` and screenshots in the README.
+
+### Changed
+- The EQ page's note no longer says the scales are provisional.
+
 ## [0.1.0] - first public version
 
 ### Added

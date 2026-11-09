@@ -27,7 +27,8 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-The tests run without a console (the server's `MIDI_PORT=mock` mode). Run them before sending a pull request,
+The tests run without a console (the server's `MIDI_PORT=mock` mode). To try the page by hand without a console,
+start it with `MIDI_PORT=mock DEMO=1` (a made-up mix); `tools/make_screenshots.py` regenerates the README pictures. Run them before sending a pull request,
 and add a test for new protocol code: the tests in `tests/test_protocol.py` use messages that a real console sent,
 so a new parameter is easy to add the same way.
 
