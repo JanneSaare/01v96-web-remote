@@ -1,0 +1,48 @@
+name: Found a new parameter or address
+description: You worked out where the console keeps something (a value, a switch, a meter)
+title: "[Parameter] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Finding addresses is how this project grows. The method is in
+        [docs/TOOLS.md](../blob/main/docs/TOOLS.md): change **one** thing on the console and see what moved.
+        Raw output is more useful than a conclusion, because it lets someone check it.
+  - type: input
+    id: what
+    attributes:
+      label: What is it?
+      description: For example "Pan of input channels" or "AUX 4 send level".
+    validations:
+      required: true
+  - type: input
+    id: console
+    attributes:
+      label: Console model and firmware
+    validations:
+      required: true
+  - type: textarea
+    id: how
+    attributes:
+      label: What did you change on the console, and with which tool?
+      description: For example "moved the pan of CH1 from centre to hard left, ran param_probe.py before and after, then param_diff.py".
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: The raw output
+      description: The lines that changed (from `param_diff.py`, `cc_sniff.py` or `param_watch.py`), with what the console displayed at each point.
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: confidence
+    attributes:
+      label: How sure are you?
+      options:
+        - Seen several times on different channels or values
+        - Seen once
+        - A guess from a pattern
+    validations:
+      required: true

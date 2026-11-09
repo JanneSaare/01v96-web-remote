@@ -1,0 +1,50 @@
+name: Bug report
+description: Something does not work as described
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. A good report lets me reproduce the problem. If your console behaves differently from
+        what is described in [docs/PROTOCOL.md](../blob/main/docs/PROTOCOL.md), please use **Console report** instead.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, and what did you see? What did you expect to see?
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: How are you running it?
+      options:
+        - With a real console
+        - In mock mode (MIDI_PORT=mock)
+    validations:
+      required: true
+  - type: input
+    id: console
+    attributes:
+      label: Console and firmware
+      description: For example "01V96 V2, firmware 2.xx". Leave empty for mock mode.
+  - type: input
+    id: system
+    attributes:
+      label: Computer running the server
+      description: For example "Raspberry Pi 4, Raspberry Pi OS Bookworm, Python 3.11".
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      description: For example "Safari on iPad" or "Chrome on Windows". Did a forced reload (Ctrl+Shift+R) change anything?
+  - type: textarea
+    id: log
+    attributes:
+      label: Server output / MIDI log
+      description: |
+        Anything the server printed. If it is about a control that does not react, the output of
+        `python tools/cc_sniff.py` while you move that control on the console helps a lot (stop the server first).
+      render: text

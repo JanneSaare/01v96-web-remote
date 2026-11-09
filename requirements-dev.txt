@@ -1,0 +1,6 @@
+# Everything needed to run the tests (no MIDI backend: the tests use the server's mock mode)
+fastapi>=0.110
+uvicorn[standard]>=0.29
+mido>=1.3
+httpx>=0.27
+pytest>=8

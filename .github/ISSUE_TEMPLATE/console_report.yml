@@ -1,0 +1,41 @@
+name: Console report (what works on your console)
+description: Tell us what works, or does not, on your console. Very valuable, whether it works or not!
+title: "[Console report] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This project was developed on **one** 01V96 V2, and some parts are only *assumed* (marked ◐ in
+        [docs/PROTOCOL.md](../blob/main/docs/PROTOCOL.md)). Confirming or correcting them is the most useful thing
+        you can do. [docs/TESTING.md](../blob/main/docs/TESTING.md) is a checklist; you don't have to do all of it.
+  - type: input
+    id: console
+    attributes:
+      label: Console model and firmware version
+      description: For example "01V96 V2, firmware 2.xx" (the version is shown on the UTILITY screen).
+    validations:
+      required: true
+  - type: checkboxes
+    id: works
+    attributes:
+      label: What works as expected? (tick what you tested and found OK)
+      options:
+        - label: Faders and mutes, both directions (page to console, console to page)
+        - label: The page shows the console's state when the server starts
+        - label: EQ, including shelf and HPF/LPF on the HIGH band
+        - label: Compressor, including the gain-reduction bars
+        - label: AUX sends 1-3
+        - label: AUX sends 4-8 (assumed, not confirmed by the author)
+        - label: AUX masters 3-8 and BUS masters 3-8 (assumed, not confirmed by the author)
+        - label: Level meters for AUX, BUS and the stereo master
+  - type: textarea
+    id: differs
+    attributes:
+      label: What does not work, or behaves differently?
+      description: Be as concrete as you can ("AUX 5 send moves AUX 6 on the console").
+  - type: textarea
+    id: log
+    attributes:
+      label: Output of the tools, if you used them
+      description: For example `python tools/cc_sniff.py` while moving a control. See docs/TOOLS.md.
+      render: text

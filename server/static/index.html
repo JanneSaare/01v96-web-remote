@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<title>01V96 Remote</title>
+<style>
+:root{--bg:#121417;--panel:#1b1e23;--line:#2c3139;--text:#e8eaed;--dim:#8b929c;--accent:#3ea6ff;--mute:#e5484d;--on:#30a46c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:14px system-ui,sans-serif;display:flex;flex-direction:column;
+ touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
+header{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:15px;margin:0;font-weight:600}
+#dot{width:10px;height:10px;border-radius:50%;background:var(--mute)} #dot.ok{background:var(--on)}
+#msg{color:var(--mute);font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+nav{display:flex;gap:6px;padding:8px 12px 0}
+nav button{flex:1;max-width:120px;padding:10px 0;border:1px solid var(--line);background:var(--panel);color:var(--dim);border-radius:8px;font:inherit}
+nav button.sel{color:var(--text);border-color:var(--accent);background:#1a2733}
+#main{flex:1;display:flex;min-height:0}
+#strips{flex:1;min-width:0;display:flex;gap:6px;padding:8px 6px 12px 12px;overflow-x:auto}
+#master{display:flex;padding:8px 12px 12px 0}
+#master .strip{flex:0 0 96px;max-width:none;border-color:var(--accent)}
+.strip{flex:1 0 76px;max-width:120px;display:flex;flex-direction:column;align-items:center;gap:8px;
+ background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 6px;min-height:0}
+.name{width:100%;text-align:center;font-weight:600;padding:6px 2px;border-radius:6px;background:#23272e;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.num{color:var(--dim);font-size:11px}
+.fader{flex:1;min-height:140px;width:100%;position:relative;touch-action:none}
+.track{position:absolute;left:50%;top:14px;bottom:14px;width:6px;margin-left:-3px;background:#0b0c0e;border-radius:3px}
+.fill{position:absolute;left:0;right:0;bottom:0;background:var(--accent);border-radius:3px;opacity:.55}
+.mark{position:absolute;left:0;right:0;height:0;border-top:1px solid #3a414b;font-size:10px;color:var(--dim)}
+.mark span{position:absolute;left:3px;top:-12px}
+.mark.zero{border-top-color:var(--text)}
+.knob{position:absolute;left:8%;right:8%;height:34px;margin-top:-17px;background:linear-gradient(#5b626c,#3a3f47);
+ border-radius:6px;border:1px solid #7c8490;box-shadow:0 2px 6px #0008}
+.knob::after{content:"";position:absolute;left:8%;right:8%;top:50%;border-top:2px solid var(--text)}
+.meter{position:absolute;right:4px;top:14px;bottom:14px;width:9px;border-radius:2px;overflow:hidden;
+ background:linear-gradient(to top,#30a46c 0,#30a46c 70%,#f5d90a 70%,#f5d90a 88%,#e5484d 88%)}
+.meter .cover{position:absolute;left:0;right:0;top:0;background:#0b0c0e}
+.meter .tick{position:absolute;left:0;right:0;height:1px;background:#fff;opacity:.55}
+.meter .tick.t0{opacity:1;height:2px}
+.mdb{font-variant-numeric:tabular-nums;font-size:11px;color:var(--dim);min-height:14px}
+#modes{display:flex;gap:6px;padding:6px 12px 0;flex-wrap:wrap}
+#modes button{flex:0 0 auto;min-width:54px;padding:6px 10px;border:1px solid var(--line);background:var(--panel);color:var(--dim);border-radius:8px;font:inherit;font-size:12px}
+#modes button.sel{color:var(--text);border-color:var(--accent);background:#1a2733}
+#modes button.sel.aux{border-color:#f5a623;background:#2b2210}
+.meter.l{right:16px}
+#strips.aux .fill{background:#f5a623}
+#strips.aux .knob{border-color:#f5a623}
+#modes button.sel.out{border-color:#b07cff;background:#241a33}
+#strips.out .fill{background:#b07cff}
+#strips.out .knob{border-color:#b07cff}
+.mutebtn.pre{background:#f5a623;color:#1b1e23}
+.locked .eqbtn{display:none}
+.grmeter{position:absolute;left:5px;top:14px;bottom:14px;width:7px;border-radius:2px;overflow:hidden;background:#0b0c0e}
+.grfill{position:absolute;left:0;right:0;top:0;height:0;background:#f5a623}
+.grrow{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--dim);max-width:440px;width:100%;align-self:center}
+.grbar{flex:1;height:12px;background:#0b0c0e;border:1px solid var(--line);border-radius:3px;position:relative;overflow:hidden}
+#dyngrfill{position:absolute;right:0;top:0;bottom:0;width:0;background:#f5a623}
+.grrow b{min-width:64px;text-align:right;color:var(--text);font-variant-numeric:tabular-nums}
+.meter .peak{position:absolute;left:0;right:0;height:2px;background:#fff;bottom:0}
+.val{font-variant-numeric:tabular-nums;color:var(--dim);font-size:12px}
+.mutebtn{width:100%;height:46px;border:0;border-radius:8px;background:#2a2f36;color:var(--dim);font-weight:700;font:inherit;font-weight:700}
+.mutebtn.unk{opacity:.55}
+.mutebtn.muted{background:var(--mute);color:#fff}
+.eqbtn{width:100%;height:34px;border:1px solid var(--line);border-radius:8px;background:#23272e;color:var(--text);font:inherit;font-weight:600}
+#eq,#dyn{position:fixed;inset:0;z-index:10;background:var(--bg);display:flex;flex-direction:column;gap:8px;padding:8px 12px 12px;overflow-y:auto;touch-action:pan-y}
+#eq[hidden],#dyn[hidden]{display:none}
+#dyn{z-index:11}
+#dyngraph{width:100%;max-width:440px;aspect-ratio:1/1;height:auto;align-self:center;background:#0e1013;border:1px solid var(--line);border-radius:8px;touch-action:none;flex:none}
+#dynparams{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.eqhead{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.eqhead b{min-width:90px;text-align:center}
+.eqhead .sp{flex:1}
+.eqhead button,.flag{min-width:44px;height:38px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);font:inherit;font-weight:600}
+.flag.on{background:var(--on);border-color:var(--on);color:#fff}
+.flag.unk{opacity:.55}
+#eqgraph{width:100%;height:220px;background:#0e1013;border:1px solid var(--line);border-radius:8px;touch-action:none;flex:none}
+#eqbands{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.band{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.band h3{margin:0;font-size:13px}
+.band label{font-size:11px;color:var(--dim);display:flex;justify-content:space-between}
+.band input[type=range]{width:100%;touch-action:pan-y}
+.band.unk .v{opacity:.5}
+.warn{font-size:11px;color:var(--dim)}
+.disabled{opacity:.45;pointer-events:none}
+</style></head><body>
+<header><div id="dot"></div><h1>01V96 Remote</h1><div id="msg"></div></header>
+<nav id="tabs"></nav>
+<div id="modes"></div>
+<div id="main"><div id="strips"></div><div id="master"></div></div>
+<div id="eq" hidden>
+ <div class="eqhead">
+  <button id="eqprev">‹</button><b id="eqtitle"></b><button id="eqnext">›</button><span class="sp"></span>
+  <button class="flag" data-flag="eq">EQ</button><button class="flag" data-flag="hpf">HPF</button><button class="flag" data-flag="lpf">LPF</button>
+  <button id="eqclose">✕</button>
+ </div>
+ <canvas id="eqgraph"></canvas>
+ <div id="eqbands"></div>
+ <div class="warn">Provisional scales: Hz, dB and Q are estimates until calibrated against the console. Band shapes are drawn as bells. Dimmed values are not yet known; they are read from the console at server start and appear once you touch them.</div>
+</div>
+<div id="dyn" hidden>
+ <div class="eqhead">
+  <button id="dynprev">‹</button><b id="dyntitle"></b><button id="dynnext">›</button><span class="sp"></span>
+  <button class="flag" id="dynon">COMP ON</button>
+  <button id="dynclose">✕</button>
+ </div>
+ <canvas id="dyngraph"></canvas>
+ <div class="grrow"><span>Gain reduction</span><div class="grbar"><div id="dyngrfill"></div></div><b id="dyngrdb">0.0 dB</b></div>
+ <div id="dynparams"></div>
+ <div class="warn">Compressor. Values are the console's own steps (ratio, attack, release and so on are read from it at server start). The curve is an approximation: the knee width is estimated. The gain-reduction scale is assumed (same steps per dB as the level meters). Shows compressor values even if the channel's dynamics type is something else.</div>
+</div>
+
+<script>
+// ---- config (approximate; confirm against the console) ----
+const ZERO_DB = 860;          // fader value for 0 dB (measured on the console)
+const PER_PAGE = 8;           // strips per layer tab
+const SEND_MS = 30;           // throttle for fader sends
+let METER_FLOOR_DB = -60;     // bottom of meter scale (server overrides)
+const METER_DECAY = 0.85;     // per update when level falls
+const PEAK_HOLD_MS = 1500;
+let METER_CAL = [[0,-90],[3911,0]];   // [raw, dB] points from the server
+function rawToDb(raw){
+  const c=METER_CAL;
+  if(raw<=c[0][0]) return c[0][1];
+  for(let i=1;i<c.length;i++) if(raw<=c[i][0]){
+    const [r0,d0]=c[i-1],[r1,d1]=c[i]; return d0+(d1-d0)*(raw-r0)/(r1-r0);
+  }
+  return c[c.length-1][1];
+}
+const meterLvl = {}, meterPeak = {};   // per channel, 0..1 (+ peak timestamp)
+let GR_STEPS = 41;                     // gain-reduction meter: raw steps per dB below 4095 (server overrides)
+const GR_RANGE_DB = 24;                // full scale of the reduction bars
+const grDb = raw => Math.max(0, (4095-raw)/GR_STEPS);
+
+const $ = id => document.getElementById(id);
+let ws, MAX = 1023, total = 0, page = 0, strips = {};
+const store = {
+  get(k, d){ try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+const names = {};                                   // shown names, shared through the server (key: channel; 0 = ST OUT, 101-108 AUX, 201-208 BUS)
+const oldLocalNames = store.get("names", {});       // names typed before names were shared: uploaded once at connect
+const defName = ch => ch>=200?`BUS ${ch-200}`:ch>=100?`AUX ${ch-100}`:ch?`CH ${ch}`:"ST OUT";
+const nameEls = {};                                 // channel -> the name box on screen
+function setName(ch,text){                          // update a name everywhere it is shown
+  if(text) names[ch]=text; else delete names[ch];
+  const el=nameEls[ch]; if(el) el.textContent=names[ch]||defName(ch);
+  if(eqCh===ch) eqUpdate(); if(dynCh===ch) dynUpdate();
+}
+let model = { fader:{}, mute:{} };
+let auxMode = 0;                      // 0 = normal mix, 1..8 = faders show that aux's send levels
+let outView = 0;                      // 0 = off, 1 = the eight AUX master faders, 2 = the eight BUS (sub) master faders
+const OUT_BASE = {1:100, 2:200};      // pseudo channel numbers on the server: AUX n = 100+n, BUS n = 200+n
+const outLabel = ch => ch>=200?`BUS ${ch-200}`:`AUX ${ch-100}`;
+const LOCK_AUX = (()=>{ const n=+new URLSearchParams(location.search).get("aux"); return n>=1&&n<=8?n:0; })();   // ?aux=3: only that aux
+
+function connect(){
+  ws = new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host+"/ws");
+  ws.onopen = () => { $("dot").classList.add("ok"); document.body.classList.remove("offline"); };
+  ws.onclose = () => { $("dot").classList.remove("ok"); $("main").classList.add("disabled");
+    setTimeout(connect, 1000); };
+  ws.onmessage = e => {
+    const m = JSON.parse(e.data);
+    if (m.type==="init"){ MAX=m.fader_max; METER_CAL=m.meter_cal; METER_FLOOR_DB=m.meter_floor_db; GR_STEPS=m.gr_steps_per_db||41; total=m.channels; model=m.state; model.eq=m.eq; model.dyn=m.dyn; model.send=m.sends; EQ_MAX=m.eq_max;
+      Object.keys(names).forEach(k=>delete names[k]); Object.assign(names,oldLocalNames,m.names||{});     // server wins; old local names fill gaps
+      for(const k of Object.keys(oldLocalNames)) if(!(m.names&&k in m.names)&&oldLocalNames[k]) send({type:"name",ch:+k,name:oldLocalNames[k]}); $("msg").textContent="";
+      $("main").classList.remove("disabled"); buildTabs(); buildModes(); render();
+      if(auxMode) send({type:"sync_aux",aux:auxMode}); }
+    else if (m.type==="meters") { updateMeters(m.v,m.aux,m.bus,m.st); if(m.gr) updateGr(m.gr); }
+    else if (m.type==="error") $("msg").textContent = m.message;
+    else if (m.type==="fader"||m.type==="mute") remoteUpdate(m);
+    else if (m.type==="eq"||m.type==="eqflag") remoteEq(m);
+    else if (m.type==="dyn") remoteDyn(m);
+    else if (m.type==="send") remoteSend(m);
+    else if (m.type==="name") setName(m.ch,m.name);
+  };
+}
+const lastLocal = {};   // ch -> time of our last fader send
+const send = o => { if(o.type==="fader"||(o.type==="send"&&o.kind==="level")) lastLocal[o.ch]=Date.now();
+  return ws && ws.readyState===1 && ws.send(JSON.stringify(o)); };
+
+// Change reported by the console (or another browser). Ignore fader updates
+// while we are dragging that fader, or just after, so the echo doesn't fight us.
+function remoteUpdate(m){
+  const s=strips[m.ch];
+  if(m.type==="fader"){
+    const busy=s&&(s.f._drag||Date.now()-(lastLocal[m.ch]||0)<400);
+    if(!busy) model.fader[m.ch]=m.value;
+  } else model.mute[m.ch]=m.muted;
+  refresh(m.ch);
+}
+
+// Aux sends: model.send[aux][ch] = {level (0..MAX), pre (0/1)}. In an aux mode the strip faders show/set the
+// send level and the MUTE button becomes the PRE/POST switch.
+const inSend=ch=>auxMode>0&&ch>=1&&ch<=total;      // this strip shows an aux SEND (input channels only; the master strip is the aux master)
+const sendOf=ch=>(inSend(ch)&&model.send&&model.send[auxMode]&&model.send[auxMode][ch])||{};
+const lvlOf=ch=>inSend(ch)?(sendOf(ch).level??null):model.fader[ch];
+function setLvl(ch,v){ if(inSend(ch)) model.send[auxMode][ch].level=v; else model.fader[ch]=v; }
+const sendLvl=(ch,v)=>inSend(ch)?send({type:"send",ch,aux:auxMode,kind:"level",value:v}):send({type:"fader",ch,value:v});
+function remoteSend(m){
+  if(!model.send||!model.send[m.aux]||!model.send[m.aux][m.ch]) return;
+  if(m.kind==="level"){
+    const s=strips[m.ch];
+    if(auxMode===m.aux&&s&&(s.f._drag||Date.now()-(lastLocal[m.ch]||0)<400)) return;   // our own echo
+  }
+  model.send[m.aux][m.ch][m.kind]=m.value;
+  if(auxMode===m.aux) refresh(m.ch);
+}
+function buildModes(){
+  const r=$("modes"); r.innerHTML="";
+  if(LOCK_AUX){ auxMode=LOCK_AUX; document.body.classList.add("locked"); document.querySelector("h1").textContent=`AUX ${LOCK_AUX} mix`; return; }
+  const items=[{label:"MIX",aux:0,out:0}, ...[1,2,3,4,5,6,7,8].map(i=>({label:`AUX ${i}`,aux:i,out:0})),
+               {label:"AUX OUT",aux:0,out:1}, {label:"BUS OUT",aux:0,out:2}];
+  for(const it of items){
+    const b=document.createElement("button"); b.textContent=it.label; b._it=it;
+    b.onclick=()=>{ auxMode=it.aux; outView=it.out; render(); if(it.aux) send({type:"sync_aux",aux:it.aux}); };
+    r.append(b);
+  }
+}
+function buildTabs(){
+  const t=$("tabs"); t.innerHTML="";
+  for (let p=0;p*PER_PAGE<total;p++){
+    const b=document.createElement("button");
+    b.textContent=`${p*PER_PAGE+1}–${Math.min(total,(p+1)*PER_PAGE)}`;
+    b.onclick=()=>{page=p;render();};
+    t.append(b);
+  }
+}
+function render(){
+  [...$("tabs").children].forEach((b,i)=>b.classList.toggle("sel",i===page));
+  [...$("modes").children].forEach(b=>{ const it=b._it;
+    b.classList.toggle("sel",it.aux===auxMode&&it.out===outView);
+    b.classList.toggle("aux",it.aux>0); b.classList.toggle("out",it.out>0); });
+  $("tabs").style.display=outView?"none":"";                       // the channel page tabs do not apply to the AUX/BUS views
+  const root=$("strips"); root.innerHTML=""; strips={};
+  root.classList.toggle("aux",!!auxMode); $("master").classList.toggle("aux",!!auxMode);
+  root.classList.toggle("out",!!outView);
+  if(outView) for(let n=1;n<=8;n++) root.append(makeStrip(OUT_BASE[outView]+n));      // AUX or BUS master strips
+  else for (let ch=page*PER_PAGE+1; ch<=Math.min(total,(page+1)*PER_PAGE); ch++) root.append(makeStrip(ch));
+  const mroot=$("master"); mroot.innerHTML=""; mroot.append(makeStrip(auxMode?100+auxMode:0));   // master stays visible on every tab (in an AUX send tab: that aux's master)
+}
+function makeStrip(ch){
+  const d=document.createElement("div"); d.className="strip";
+  const name=document.createElement("div"); name.className="name";
+  const isIn=ch>=1&&ch<=total;                       // an input channel (not the master, not an AUX/BUS master)
+  const hasMeter=isIn||ch>=100||ch===0;              // inputs, the AUX/BUS masters and the stereo master (L+R) have level meters
+  const dflt=()=>ch>=100?outLabel(ch):ch?`CH ${ch}`:(auxMode?`AUX ${auxMode}`:"ST OUT");
+  name.onclick=()=>{ const n=prompt(`Name for ${dflt()} (empty = default)`, names[ch]||""); if(n!==null){ setName(ch,n.trim()); send({type:"name",ch,name:n.trim()}); } };
+  name.textContent=names[ch]||dflt();
+  nameEls[ch]=name;
+  const num=Object.assign(document.createElement("div"),{className:"num",textContent:ch>=200?"BUS MASTER":ch>=100?"AUX MASTER":ch?`CH ${ch}`:"MASTER"});
+
+  const f=document.createElement("div"); f.className="fader";
+  f.innerHTML='<div class="track"><div class="fill"></div></div>';
+  addMark(f,MAX,"+10"); addMark(f,ZERO_DB,"0",true); addMark(f,0,"−∞");
+  const meter=document.createElement("div"); meter.className="meter";
+  if(hasMeter) meter.innerHTML='<div class="cover" style="height:100%"></div><div class="peak"></div>'
+    + [0,-6,-12,-20,-30,-40,-50].map(db=>
+        `<div class="tick${db===0?" t0":""}" style="bottom:${(db-METER_FLOOR_DB)/-METER_FLOOR_DB*100}%"></div>`).join("");
+  if(hasMeter) f.append(meter);
+  let meterL=null;                                   // the stereo master has a second (left) bar next to the right one
+  if(ch===0){ meterL=document.createElement("div"); meterL.className="meter l"; meterL.innerHTML=meter.innerHTML; f.append(meterL); }
+  const grm=document.createElement("div"); grm.className="grmeter"; grm.innerHTML='<div class="grfill"></div>';
+  if(isIn) f.append(grm);   // compressor gain reduction, grows downward from the top
+  const mdb=Object.assign(document.createElement("div"),{className:"mdb",textContent:"-∞"});
+  const knob=document.createElement("div"); knob.className="knob"; f.append(knob);
+  const val=Object.assign(document.createElement("div"),{className:"val"});
+
+  const mb=document.createElement("button"); mb.className="mutebtn"; mb.textContent="MUTE";
+  mb.onclick=()=>{
+    if(inSend(ch)){ const nv=sendOf(ch).pre?0:1; model.send[auxMode][ch].pre=nv; refresh(ch);
+                 send({type:"send",ch,aux:auxMode,kind:"pre",value:nv}); return; }
+    const mu=!model.mute[ch]; model.mute[ch]=mu; refresh(ch); send({type:"mute",ch,muted:mu}); };
+
+  let last=0, lastTap=0;
+  const setFromEvent=(e,final)=>{
+    const r=f.getBoundingClientRect(), top=r.top+14, h=r.height-28;
+    const v=Math.round(Math.max(0,Math.min(1,1-(e.clientY-top)/h))*MAX);
+    setLvl(ch,v); refresh(ch);
+    const t=Date.now(); if(final||t-last>=SEND_MS){ last=t; sendLvl(ch,v); }
+  };
+  f.onpointerdown=e=>{
+    const t=Date.now();
+    if(t-lastTap<300){ setLvl(ch,ZERO_DB); refresh(ch); sendLvl(ch,ZERO_DB); lastTap=0; return; }
+    lastTap=t; f.setPointerCapture(e.pointerId); f._drag=true; setFromEvent(e);
+  };
+  f.onpointermove=e=>{ if(f._drag) setFromEvent(e); };
+  f.onpointerup=f.onpointercancel=e=>{ if(f._drag){ f._drag=false; setFromEvent(e,true); } };
+
+  const eqb=document.createElement("button"); eqb.className="eqbtn"; eqb.textContent="EQ"; eqb.onclick=()=>openEq(ch);
+  const dynb=document.createElement("button"); dynb.className="eqbtn"; dynb.textContent="DYN"; dynb.onclick=()=>openDyn(ch);
+  d.append(name,num,...(hasMeter?[mdb]:[]),f,val,...(isIn?[eqb,dynb]:[]),mb);
+  strips[ch]={knob,fill:f.querySelector(".fill"),val,mb,f,cover:meter.querySelector(".cover"),peak:meter.querySelector(".peak"),mdb,gr:grm.querySelector(".grfill"),
+                coverL:meterL&&meterL.querySelector(".cover"),peakL:meterL&&meterL.querySelector(".peak")};
+  refresh(ch);
+  return d;
+}
+function updateMeters(vals,aux,bus,st){
+  const now=performance.now();
+  const all=vals.map((raw,i)=>[i+1,raw]);                          // input channels 1..n
+  if(aux) aux.forEach((raw,i)=>all.push([101+i,raw]));              // AUX 1-8 masters = pseudo channels 101-108
+  if(bus) bus.forEach((raw,i)=>all.push([201+i,raw]));              // BUS 1-8 masters = 201-208
+  if(st){ all.push([301,st[0]]); all.push([302,st[1]]); }           // stereo master: 301 = left bar, 302 = right bar
+  all.forEach(([ch,raw])=>{
+    const db=rawToDb(raw);
+    const t=Math.max(0,Math.min(1,(db-METER_FLOOR_DB)/-METER_FLOOR_DB));
+    const prev=meterLvl[ch]||0;
+    const lvl=t>=prev?t:prev*METER_DECAY+t*(1-METER_DECAY);
+    meterLvl[ch]=lvl;
+    const p=meterPeak[ch];
+    if(!p||t>=p.v) meterPeak[ch]={v:t,t:now};
+    else if(now-p.t>PEAK_HOLD_MS) p.v=Math.max(t,p.v-0.03);   // fall slowly after the hold
+    const stereo=ch>=301, s=strips[stereo?0:ch]; if(!s||!s.cover) return;
+    const cover=ch===301?s.coverL:s.cover, peak=ch===301?s.peakL:s.peak;
+    if(!cover) return;
+    cover.style.height=`${(1-lvl)*100}%`;
+    peak.style.bottom=`calc(${meterPeak[ch].v*100}% - 2px)`;
+    const pv=ch===302?Math.max(meterPeak[301]?meterPeak[301].v:0,meterPeak[302].v):meterPeak[ch].v;   // master readout: louder side
+    if(ch!==301) s.mdb.textContent=pv<=0.001?"-∞":(METER_FLOOR_DB+pv*-METER_FLOOR_DB).toFixed(0)+" dB";
+  });
+}
+function updateGr(vals){
+  vals.forEach((raw,i)=>{
+    const ch=i+1, db=grDb(raw), s=strips[ch];
+    if(s&&s.gr) s.gr.style.height=`${Math.min(1,db/GR_RANGE_DB)*100}%`;
+    if(ch===dynCh){
+      $("dyngrfill").style.width=`${Math.min(1,db/GR_RANGE_DB)*100}%`;
+      $("dyngrdb").textContent=(db>0.05?"−":"")+db.toFixed(1)+" dB";
+    }
+  });
+}
+function addMark(f,v,label,zero){
+  const m=document.createElement("div"); m.className="mark"+(zero?" zero":"");
+  m.style.bottom=`calc(14px + (100% - 28px) * ${v/MAX})`; m.innerHTML=`<span>${label}</span>`; f.append(m);
+}
+function refresh(ch){
+  const s=strips[ch]; if(!s) return;
+  const lv=lvlOf(ch), known=lv!=null, v=lv??0, pct=v/MAX;
+  s.knob.style.opacity=known?1:.35;
+  s.knob.style.bottom=`calc(14px + (100% - 28px) * ${pct})`; s.knob.style.top="auto"; s.knob.style.marginTop="0"; s.knob.style.transform="translateY(50%)";
+  s.fill.style.height=`${pct*100}%`;
+  s.val.textContent=!known?"–":v===ZERO_DB?"0 dB":v;
+  if(inSend(ch)){                         // PRE/POST switch of this channel's send
+    const p=sendOf(ch).pre;
+    s.mb.textContent=p==null?"PRE/POST":p?"PRE":"POST";
+    s.mb.classList.remove("muted"); s.mb.classList.toggle("pre",!!p); s.mb.classList.toggle("unk",p==null);
+  } else {
+    s.mb.textContent="MUTE"; s.mb.classList.remove("pre");
+    s.mb.classList.toggle("muted",!!model.mute[ch]);
+    s.mb.classList.toggle("unk",model.mute[ch]==null);
+  }
+}
+
+// ================= EQ panel =================
+const BANDS=["low","lomid","himid","high"];
+const BAND_LABEL={low:"LOW",lomid:"LO-MID",himid:"HI-MID",high:"HIGH"};
+const BAND_COLOR={low:"#ff7a59",lomid:"#f5d90a",himid:"#30a46c",high:"#3ea6ff"};
+const BAND_DEFAULT_HZ={low:100,lomid:500,himid:2000,high:8000};
+const EQ_RANGE_DB=18, EQ_FS=48000;
+let EQ_MAX={gain:16383,freq:127,q:127};
+// Provisional raw <-> physical conversions. Replace once calibrated against the console.
+const EQC={
+  gainDb:r=>(r-EQ_MAX.gain/2)/(EQ_MAX.gain/2)*EQ_RANGE_DB,
+  dbGain:d=>Math.max(0,Math.min(EQ_MAX.gain,Math.round(EQ_MAX.gain/2+d/EQ_RANGE_DB*EQ_MAX.gain/2))),
+  // Measured: console freq step v = raw+1, clipped to 5..124 (120 steps), 21.2 Hz .. 20 kHz on its display.
+  freqHz:r=>{const v=Math.max(5,Math.min(124,r+1)); return 21.2*Math.pow(20000/21.2,(v-5)/119);},
+  hzFreq:h=>Math.max(0,Math.min(EQ_MAX.freq,Math.round(5+119*Math.log(h/21.2)/Math.log(20000/21.2))-1)),
+};
+// Q handling. Measured: CC raw -> console Q step v (tables below). Q falls as v rises: Q = 10^(1-v/20),
+// i.e. v=0 -> 10, v=20 -> 1.0, v=40 -> 0.10 (console: "Q=0.10 at the max, right before shelf").
+// LOW/HIGH bands (v 0..44) also carry the filter type in the Q value. Read from the console (SysEx) after
+// switching the LOW band type: bell 0..40, shelf = 41, HPF = 44 (42/43 assumed HPF/LPF too). HIGH assumed alike.
+// CC raw maps to v with slope 0.5 per step (v=41 at raw ~102, v=44 from raw 108). Adjust the two values below.
+const V_SHELF=41, V_CUT_MIN=42;
+const Q_PTS={mid:[[0,0],[16,4],[32,10],[48,15],[64,20],[80,26],[96,31],[112,36],[127,40]],
+             edge:[[0,0],[20,0],[32,6],[48,14],[64,22],[80,30],[96,38],[108,44],[127,44]]};
+const isEdge=b=>b==="low"||b==="high";
+function qStep(b,r){
+  const P=isEdge(b)?Q_PTS.edge:Q_PTS.mid;
+  for(let i=1;i<P.length;i++) if(r<=P[i][0]) return P[i-1][1]+(P[i][1]-P[i-1][1])*(r-P[i-1][0])/(P[i][0]-P[i-1][0]);
+  return P[P.length-1][1];
+}
+function bandInfo(b,r){                // -> {type:"bell"|"shelf"|"cut", q}
+  const v=qStep(b,r);
+  const q=Math.pow(10,1-v/20), vr=Math.round(v);
+  if(!isEdge(b)) return {type:"bell",q};
+  if(vr>=V_CUT_MIN) return {type:"cut",q:10};
+  if(vr===V_SHELF) return {type:"shelf",q:0.1};
+  return {type:"bell",q};
+}
+let eqCh=null, eqDrag=null;
+const lastEqSend={}, lastEqLocal={};
+const eqKnown=(ch,b,p)=>model.eq&&model.eq[ch]&&model.eq[ch][b][p]!=null;
+function eqVal(ch,b,p){           // known value, else a neutral default (shown dimmed)
+  if(eqKnown(ch,b,p)) return model.eq[ch][b][p];
+  if(p==="gain") return EQ_MAX.gain/2;
+  if(p==="freq") return EQC.hzFreq(BAND_DEFAULT_HZ[b]);
+  return 64;   // Q ~ 1 (v=20)
+}
+const fmtHz=h=>h>=1000?(h/1000).toFixed(h>=10000?1:2)+" kHz":Math.round(h)+" Hz";
+
+function openEq(ch){
+  eqCh=ch; $("eq").hidden=false; buildEqBands(); eqUpdate();
+}
+function closeEq(){ $("eq").hidden=true; eqCh=null; }
+$("eqclose").onclick=closeEq;
+$("eqprev").onclick=()=>{ if(eqCh>1){eqCh--; eqUpdate();} };
+$("eqnext").onclick=()=>{ if(eqCh<total){eqCh++; eqUpdate();} };
+document.querySelectorAll(".flag").forEach(b=>b.onclick=()=>{
+  const f=b.dataset.flag, on=!(model.eq[eqCh].flags[f]);
+  model.eq[eqCh].flags[f]=on; eqUpdate(); send({type:"eqflag",ch:eqCh,flag:f,on});
+});
+
+function buildEqBands(){
+  const root=$("eqbands"); if(root.childElementCount) return;
+  for(const b of BANDS){
+    const d=document.createElement("div"); d.className="band"; d.id="band-"+b;
+    d.innerHTML=`<h3 style="color:${BAND_COLOR[b]}">${BAND_LABEL[b]}</h3>`
+      +["gain","freq","q"].map(p=>`<label>${p==="q"?"Q":p==="freq"?"Freq":"Gain"}<span class="v" id="v-${b}-${p}"></span></label>
+         <input type="range" id="s-${b}-${p}" min="0" max="${EQ_MAX[p]}" step="1">`).join("");
+    root.append(d);
+    for(const p of ["gain","freq","q"]){
+      const r=d.querySelector("#s-"+b+"-"+p);
+      r.oninput=()=>setEq(b,p,+r.value,false);
+      r.onchange=()=>setEq(b,p,+r.value,true);
+    }
+  }
+}
+function setEq(b,p,raw,final){
+  if(p==="gain"&&isCut(b)){            // in HPF/LPF type the gain control is the ON switch (as on the console)
+    const f=CUT_FLAG[b], on=raw>=8192;
+    if(model.eq[eqCh].flags[f]!==on){ model.eq[eqCh].flags[f]=on; eqUpdate(true); send({type:"eqflag",ch:eqCh,flag:f,on}); }
+    return;
+  }
+  const e=model.eq[eqCh][b]; e[p]=raw; eqUpdate(true);
+  const k=eqCh+b+p, t=Date.now();
+  if(final||t-(lastEqSend[k]||0)>=SEND_MS){ lastEqSend[k]=t; lastEqLocal[eqCh]=t;
+    send({type:"eq",ch:eqCh,band:b,param:p,value:raw}); }
+}
+function remoteEq(m){
+  if(!model.eq||!model.eq[m.ch]) return;
+  const busy=eqDrag||Date.now()-(lastEqLocal[m.ch]||0)<400;
+  if(m.type==="eq"){ if(busy&&m.ch===eqCh) return; model.eq[m.ch][m.band][m.param]=m.value; }
+  else model.eq[m.ch].flags[m.flag]=m.on;
+  if(m.ch===eqCh) eqUpdate();
+}
+function eqUpdate(fromSlider){      // refresh title, flags, sliders and graph for eqCh
+  $("eqtitle").textContent=`CH ${eqCh}`+(names[eqCh]?` · ${names[eqCh]}`:"");
+  for(const b of document.querySelectorAll(".flag")){
+    const v=model.eq[eqCh].flags[b.dataset.flag];
+    b.classList.toggle("on",!!v); b.classList.toggle("unk",v==null);
+  }
+  for(const b of BANDS){
+    const known=["gain","freq","q"].every(p=>eqKnown(eqCh,b,p));
+    $("band-"+b).classList.toggle("unk",!known);
+    for(const p of ["gain","freq","q"]){
+      const raw=eqVal(eqCh,b,p), el=$(`s-${b}-${p}`);
+      if(!fromSlider||el!==document.activeElement) el.value=raw;
+      $(`v-${b}-${p}`).textContent=!eqKnown(eqCh,b,p)?"–":
+        p==="gain"?gainLabel(b,raw):p==="freq"?fmtHz(EQC.freqHz(raw)):qLabel(b,raw);
+    }
+  }
+  drawEq();
+}
+
+// ---- graph ----
+const cv=$("eqgraph"), FMIN=20, FMAX=20000, PAD=26;
+const fx=(f,w)=>PAD+(Math.log(f/FMIN)/Math.log(FMAX/FMIN))*(w-PAD-8);
+const xf=(x,w)=>FMIN*Math.pow(FMAX/FMIN,(x-PAD)/(w-PAD-8));
+const gy=(d,h)=>8+(1-(d+EQ_RANGE_DB)/(2*EQ_RANGE_DB))*(h-8-16);
+const yg=(y,h)=>(1-(y-8)/(h-8-16))*2*EQ_RANGE_DB-EQ_RANGE_DB;
+function biquadDb(b,a,f){             // magnitude (dB) of a biquad at f
+  const w=2*Math.PI*f/EQ_FS;
+  const m=(k)=>{const re=k[0]+k[1]*Math.cos(w)+k[2]*Math.cos(2*w), im=-(k[1]*Math.sin(w)+k[2]*Math.sin(2*w)); return re*re+im*im;};
+  return 10*Math.log10(m(b)/m(a));
+}
+function bellDb(f,f0,gdb,q){          // RBJ peaking filter
+  const A=Math.pow(10,gdb/40), w0=2*Math.PI*f0/EQ_FS, al=Math.sin(w0)/(2*q), c=Math.cos(w0);
+  return biquadDb([1+al*A,-2*c,1-al*A],[1+al/A,-2*c,1-al/A],f);
+}
+function shelfDb(f,f0,gdb,high){      // RBJ shelf, slope S=1 (Q=0.707)
+  const A=Math.pow(10,gdb/40), w0=2*Math.PI*f0/EQ_FS, c=Math.cos(w0), al=Math.sin(w0)/(2*Math.SQRT1_2), t=2*Math.sqrt(A)*al;
+  if(high) return biquadDb(
+    [A*((A+1)+(A-1)*c+t), -2*A*((A-1)+(A+1)*c), A*((A+1)+(A-1)*c-t)],
+    [(A+1)-(A-1)*c+t, 2*((A-1)-(A+1)*c), (A+1)-(A-1)*c-t], f);
+  return biquadDb(
+    [A*((A+1)-(A-1)*c+t), 2*A*((A-1)-(A+1)*c), A*((A+1)-(A-1)*c-t)],
+    [(A+1)+(A-1)*c+t, -2*((A-1)+(A+1)*c), (A+1)+(A-1)*c-t], f);
+}
+// In HPF/LPF type the console's gain knob is the HPF/LPF ON switch: it sends the HPF ON / LPF ON control change
+// (page 11, CC 64 / 89; value 0 or 127), not a gain CC. So the flags hpf/lpf ARE that switch.
+const CUT_FLAG={low:"hpf",high:"lpf"};
+const isCut=b=>isEdge(b)&&bandInfo(b,eqVal(eqCh,b,"q")).type==="cut";
+const cutOn=b=>isCut(b)&&model.eq[eqCh].flags[CUT_FLAG[b]]===true;
+function qLabel(b,raw){
+  const i=bandInfo(b,raw);
+  return i.type==="cut"?(b==="low"?"HPF":"LPF"):i.type==="shelf"?"Shelf":i.q.toFixed(2);
+}
+function gainLabel(b,raw){
+  return isCut(b)?(cutOn(b)?"ON":"OFF"):EQC.gainDb(raw).toFixed(1)+" dB";
+}
+// HPF/LPF: 3rd-order (18 dB/oct) Butterworth; cutoff = the LOW band freq (HPF) / HIGH band freq (LPF)
+const hpfDb=(f,fc)=>{const r6=Math.pow(f/fc,6); return 10*Math.log10(r6/(1+r6));};
+const lpfDb=(f,fc)=>-10*Math.log10(1+Math.pow(f/fc,6));
+function drawEq(){
+  const dpr=window.devicePixelRatio||1, w=cv.clientWidth, h=cv.clientHeight;
+  if(!w) return;
+  if(cv.width!==w*dpr||cv.height!==h*dpr){ cv.width=w*dpr; cv.height=h*dpr; }
+  const g=cv.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+  g.font="10px system-ui"; g.textBaseline="middle";
+  g.strokeStyle="#252a31"; g.fillStyle="#8b929c"; g.lineWidth=1;
+  for(const f of [20,50,100,200,500,1000,2000,5000,10000,20000]){
+    const x=fx(f,w); g.beginPath(); g.moveTo(x,8); g.lineTo(x,h-16); g.stroke();
+    g.textAlign="center"; g.fillText(f>=1000?f/1000+"k":f,x,h-7);
+  }
+  for(let d=-EQ_RANGE_DB;d<=EQ_RANGE_DB;d+=6){
+    const y=gy(d,h); g.strokeStyle=d===0?"#4a525e":"#252a31"; g.beginPath(); g.moveTo(PAD,y); g.lineTo(w-8,y); g.stroke();
+    g.textAlign="right"; g.fillText(d>0?"+"+d:d,PAD-4,y);
+  }
+  const bands=BANDS.map(b=>{const i=bandInfo(b,eqVal(eqCh,b,"q"));
+    return {b,f:EQC.freqHz(eqVal(eqCh,b,"freq")),g:i.type==="cut"?0:EQC.gainDb(eqVal(eqCh,b,"gain")),
+            q:i.q,type:i.type,known:["gain","freq","q"].every(p=>eqKnown(eqCh,b,p))};});
+  const on=model.eq[eqCh].flags.eq;
+  g.strokeStyle=on===false?"#5a606a":"#e8eaed"; g.lineWidth=2; g.beginPath();
+  for(let x=PAD;x<=w-8;x+=2){
+    const f=xf(x,w); let db=0;
+    for(const k of bands) db+=k.type==="shelf"?shelfDb(f,k.f,k.g,k.b==="high")
+      :k.type==="cut"?(cutOn(k.b)?(k.b==="low"?hpfDb(f,k.f):lpfDb(f,k.f)):0):bellDb(f,k.f,k.g,k.q);
+    const y=gy(Math.max(-EQ_RANGE_DB,Math.min(EQ_RANGE_DB,db)),h); x===PAD?g.moveTo(x,y):g.lineTo(x,y);
+  }
+  g.stroke();
+  for(const k of bands){
+    g.globalAlpha=k.known?1:.35; g.fillStyle=BAND_COLOR[k.b];
+    g.beginPath(); g.arc(fx(k.f,w),gy(k.g,h),9,0,7); g.fill(); g.globalAlpha=1;
+  }
+}
+function nodeAt(e){
+  const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+  let best=null, bd=30;
+  for(const b of BANDS){
+    const cut=bandInfo(b,eqVal(eqCh,b,"q")).type==="cut";
+    const nx=fx(EQC.freqHz(eqVal(eqCh,b,"freq")),r.width), ny=gy(cut?0:EQC.gainDb(eqVal(eqCh,b,"gain")),r.height);
+    const d=Math.hypot(nx-x,ny-y); if(d<bd){bd=d;best=b;}
+  }
+  return best;
+}
+function dragTo(e,final){
+  const r=cv.getBoundingClientRect();
+  const x=Math.max(PAD,Math.min(r.width-8,e.clientX-r.left)), y=Math.max(8,Math.min(r.height-16,e.clientY-r.top));
+  setEq(eqDrag,"freq",EQC.hzFreq(xf(x,r.width)),final);
+  if(!isCut(eqDrag)) setEq(eqDrag,"gain",EQC.dbGain(yg(y,r.height)),final);   // HPF/LPF has no gain to drag
+}
+cv.onpointerdown=e=>{ eqDrag=nodeAt(e); if(eqDrag){ cv.setPointerCapture(e.pointerId); dragTo(e,false); } };
+cv.onpointermove=e=>{ if(eqDrag) dragTo(e,false); };
+cv.onpointerup=cv.onpointercancel=e=>{ if(eqDrag){ dragTo(e,true); eqDrag=null; } };
+cv.onwheel=e=>{                      // wheel over a node changes Q
+  const b=nodeAt(e); if(!b) return; e.preventDefault();
+  setEq(b,"q",Math.max(0,Math.min(EQ_MAX.q,eqVal(eqCh,b,"q")+(e.deltaY<0?3:-3))),true);
+};
+// ================= Dynamics (compressor) panel =================
+// Raw values are the console's own steps; scales measured with tools/dyn_calib.py.
+const DYN_PARAMS=[["threshold","Threshold",-540,0],["ratio","Ratio",0,15],["attack","Attack",0,120],
+                  ["release","Release",0,159],["gain","Gain",0,180],["knee","Knee",0,5]];
+const DYN_DEFAULT={on:1,threshold:-200,ratio:9,attack:30,release:60,gain:0,knee:2};   // shown dimmed while unknown
+const RATIOS=["1:1","1.1:1","1.4:1","1.5:1","1.7:1","2:1","2.5:1","3:1","3.5:1","4:1","5:1","6:1","8:1","10:1","20:1","inf:1"];
+const REL_PTS=[[0,5],[10,50],[20,112],[40,261],[60,603],[80,1370],[100,3410],[120,6190],[140,19100],[159,42400]]; // step -> ms
+function relMs(i){                    // log interpolation between the measured points
+  for(let k=1;k<REL_PTS.length;k++) if(i<=REL_PTS[k][0]){
+    const [i0,m0]=REL_PTS[k-1],[i1,m1]=REL_PTS[k]; return m0*Math.pow(m1/m0,(i-i0)/(i1-i0));
+  }
+  return REL_PTS[REL_PTS.length-1][1];
+}
+const fmtMs=ms=>ms>=1000?(ms/1000).toFixed(ms>=10000?1:2)+" s":Math.round(ms)+" ms";
+const DYN_FMT={
+  threshold:v=>(v/10).toFixed(1)+" dB", ratio:v=>RATIOS[v]??"?", attack:v=>v+" ms", release:v=>fmtMs(relMs(v)),
+  gain:v=>(v>0?"+":"")+(v/10).toFixed(1)+" dB", knee:v=>v===0?"Hard":String(v)};
+let dynCh=null;
+const lastDynSend={}, lastDynLocal={};
+const dynKnown=(ch,p)=>model.dyn&&model.dyn[ch]&&model.dyn[ch][p]!=null;
+const dynVal=(ch,p)=>dynKnown(ch,p)?model.dyn[ch][p]:DYN_DEFAULT[p];
+
+function buildDynParams(){
+  const root=$("dynparams"); if(root.childElementCount) return;
+  for(const [p,label,lo,hi] of DYN_PARAMS){
+    const d=document.createElement("div"); d.className="band"; d.id="dp-"+p;
+    d.innerHTML=`<label>${label}<span class="v" id="dv-${p}"></span></label><input type="range" id="ds-${p}" min="${lo}" max="${hi}" step="1">`;
+    root.append(d);
+    const el=d.querySelector("input");
+    el.oninput=()=>setDyn(p,+el.value,false);
+    el.onchange=()=>setDyn(p,+el.value,true);
+  }
+}
+function setDyn(p,v,final){
+  model.dyn[dynCh][p]=v; dynUpdate(true);
+  const k=dynCh+p, t=Date.now();
+  if(final||t-(lastDynSend[k]||0)>=SEND_MS){ lastDynSend[k]=t; lastDynLocal[dynCh]=t; send({type:"dyn",ch:dynCh,param:p,value:v}); }
+}
+function remoteDyn(m){
+  if(!model.dyn||!model.dyn[m.ch]) return;
+  if(m.ch===dynCh&&Date.now()-(lastDynLocal[m.ch]||0)<400) return;     // our own echo
+  model.dyn[m.ch][m.param]=m.value;
+  if(m.ch===dynCh) dynUpdate();
+}
+function openDyn(ch){ dynCh=ch; $("dyn").hidden=false; buildDynParams(); dynUpdate(); }
+function closeDyn(){ $("dyn").hidden=true; dynCh=null; }
+$("dynclose").onclick=closeDyn;
+$("dynon").onclick=()=>setDyn("on",dynVal(dynCh,"on")?0:1,true);
+$("dynprev").onclick=()=>{ if(dynCh>1){dynCh--; dynUpdate();} };
+$("dynnext").onclick=()=>{ if(dynCh<total){dynCh++; dynUpdate();} };
+function dynUpdate(fromSlider){
+  $("dyntitle").textContent=`CH ${dynCh} · COMP`+(names[dynCh]?` · ${names[dynCh]}`:"");
+  $("dynon").classList.toggle("on",dynKnown(dynCh,"on")&&dynVal(dynCh,"on")===1);
+  $("dynon").classList.toggle("unk",!dynKnown(dynCh,"on"));
+  for(const [p] of DYN_PARAMS){
+    const v=dynVal(dynCh,p), el=$("ds-"+p);
+    if(!fromSlider||el!==document.activeElement) el.value=v;
+    $("dv-"+p).textContent=dynKnown(dynCh,p)?DYN_FMT[p](v):"–";
+    $("dp-"+p).classList.toggle("unk",!dynKnown(dynCh,p));
+  }
+  drawDyn();
+}
+// Static transfer curve: output level vs input level. Soft knee width is estimated (3 dB per knee step).
+function compOut(x,T,R,W){
+  const s=1/R;
+  if(2*(x-T)<-W) return x;
+  if(W>0&&2*Math.abs(x-T)<=W) return x+(s-1)*Math.pow(x-T+W/2,2)/(2*W);
+  return T+(x-T)*s;
+}
+function drawDyn(){
+  const cv=$("dyngraph"), dpr=window.devicePixelRatio||1, w=cv.clientWidth, h=cv.clientHeight;
+  if(!w||dynCh==null) return;
+  if(cv.width!==w*dpr||cv.height!==h*dpr){ cv.width=w*dpr; cv.height=h*dpr; }
+  const g=cv.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+  const IN0=-60,IN1=18,OUT0=-60,OUT1=18,PX=30,PY=10;     // same dB span on both axes: the 1:1 line is a true 45 degrees
+  const PB=30;                                           // bottom margin: PX+10 = PY+PB, so the plot area is square when the canvas is
+  const gx=x=>PX+(x-IN0)/(IN1-IN0)*(w-PX-10), gy=y=>h-PB-(y-OUT0)/(OUT1-OUT0)*(h-PB-PY);
+  g.font="10px system-ui"; g.fillStyle="#8b929c"; g.lineWidth=1; g.textBaseline="middle";
+  for(let d=-60;d<=IN1;d+=10){ const x=gx(d); g.strokeStyle=d===0?"#4a525e":"#252a31"; g.beginPath(); g.moveTo(x,PY); g.lineTo(x,h-PB); g.stroke();
+    g.textAlign="center"; g.fillText(d,x,h-8); }
+  for(let d=-60;d<=OUT1;d+=10){ const y=gy(d); g.strokeStyle=d===0?"#4a525e":"#252a31"; g.beginPath(); g.moveTo(PX,y); g.lineTo(w-10,y); g.stroke();
+    g.textAlign="right"; g.fillText(d,PX-4,y); }
+  const T=dynVal(dynCh,"threshold")/10, R=dynVal(dynCh,"ratio")>=15?1000:parseFloat(RATIOS[dynVal(dynCh,"ratio")]),
+        G=dynVal(dynCh,"gain")/10, W=dynVal(dynCh,"knee")*3;
+  g.setLineDash([4,4]); g.strokeStyle="#4a525e"; g.beginPath(); g.moveTo(gx(IN0),gy(IN0)); g.lineTo(gx(IN1),gy(IN1)); g.stroke();   // 1:1
+  g.strokeStyle=BAND_COLOR.lomid; g.beginPath(); g.moveTo(gx(T),gy(OUT0)); g.lineTo(gx(T),gy(OUT1)); g.stroke(); g.setLineDash([]);   // threshold
+  g.globalAlpha=Object.values(model.dyn[dynCh]).every(v=>v!=null)&&dynVal(dynCh,"on")===1?1:.35;   // dimmed when off or not all known
+  g.strokeStyle="#e8eaed"; g.lineWidth=2; g.beginPath();
+  for(let x=IN0;x<=IN1;x+=.5){ const y=Math.max(OUT0,Math.min(OUT1,compOut(x,T,R,W)+G)); x===IN0?g.moveTo(gx(x),gy(y)):g.lineTo(gx(x),gy(y)); }
+  g.stroke(); g.globalAlpha=1;
+  g.fillStyle="#8b929c"; g.textAlign="left"; g.fillText("in dB →  /  out dB ↑",PX+6,PY+8);
+}
+window.addEventListener("resize",()=>{ if(eqCh) drawEq(); if(dynCh!=null) drawDyn(); });
+connect();
+</script></body></html>

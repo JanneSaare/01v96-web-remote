@@ -1,0 +1,28 @@
+name: Feature request
+description: Suggest something the page should do
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is a small hobby project, so I can't promise anything, but ideas are welcome. Features that need a
+        console parameter nobody has found yet (for example channel names) are limited by what the console exposes.
+        See the "Things that did not work" part of [docs/PROTOCOL.md](../blob/main/docs/PROTOCOL.md).
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to do that you can't now?
+      description: Describe the situation, not only the solution (who uses it, when, on which device).
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Anything you tried instead?
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Can you help?
+      options:
+        - label: I can test it on a real console
+        - label: I could try to build it myself

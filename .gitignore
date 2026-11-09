@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Names typed in the web page (per installation, never committed)
+names.json
+names.json.tmp
+
+# Output of the discovery tools (tools/*_scan.sh, tools/param_probe.py, ...)
+sends/
+masters/
+*.jsonl
+dyn_calib.json
+
+# Yamaha's manuals are copyrighted: download them from Yamaha, do not commit them
+*.pdf
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
