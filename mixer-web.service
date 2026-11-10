@@ -1,0 +1,20 @@
+[Unit]
+Description=01V96 web remote
+After=network.target sound.target
+
+[Service]
+Type=simple
+User=yamaha
+Group=yamaha
+SupplementaryGroups=audio
+WorkingDirectory=/opt/01v96/yamaha-remote
+Environment=MIDI_PORT=01V96
+# Block until the mixer's ALSA MIDI client exists; no start timeout so it can wait indefinitely.
+TimeoutStartSec=infinity
+ExecStartPre=/bin/sh -c 'until aconnect -l | grep -qi 01v96; do sleep 2; done'
+ExecStart=/opt/01v96/yamaha-remote/.venv/bin/uvicorn server.app:app --host 0.0.0.0 --port 8000
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
